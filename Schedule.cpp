@@ -1,135 +1,155 @@
 #include "Schedule.h"
 #include <iostream>
 
-Schedule::Schedule() {
-    clear();
+//constructor
+Schedule::Schedule()
+{
+    clear(); //empties initially
 }
 
-void Schedule::clear() {
-
+void Schedule::clear() //used for clear, empties data
+{
     totalWeeks = 0;
 
-    for (int i = 0; i < MAX_WEEKS; i++) {
-        weekGameCount[i] = 0;
-
-        for (int j = 0; j < MAX_GAMES_PER_WEEK; j++) {
-            weeks[i][j] = nullptr;
-        }
+    for (int w = 0; w < MAX_WEEKS; w++)
+    {
+        gamesPerWeek[w] = 0;
+        for (int g = 0; g < MAX_GAMES_PER_WEEK; g++)
+            weeks[w][g] = nullptr;
     }
 }
 
-void Schedule::generate(HashTable& teams, int numberOfWeeks) {
+void Schedule::generate(TeamTrees& tree, int seasonWeeks) //generates weeks with teams
+{
 
-    clear();
+    clear(); //clear on initial generation
 
-    int teamCount = teams.getCount();
-    if (teamCount < 2) return;
+    Teams* teamArray[100];
+    int teamCount = 0;
 
-    Teams* teamList[50];
+    tree.fillArray(teamArray, teamCount); //gets teams and sorts them
 
-    for (int i = 0; i < teamCount; i++)
-        teamList[i] = teams.getByIndex(i);
+    if (teamCount < 2) //scheduling not possible with less than 2 teams
+        return;
 
-    if (teamCount % 2 != 0) {
-        teamList[teamCount] = nullptr; // BYE placeholder
+    bool hasBye = false;
+
+    if (teamCount % 2 != 0) //sets bye weeks with odd number of teams
+    {
+        teamArray[teamCount] = nullptr;
         teamCount++;
+        hasBye = true;
     }
 
-    totalWeeks = numberOfWeeks;
+    int rotationCount = teamCount - 1; //number of unique matchups with total teams -1 because you cant play yourself
 
-    for (int week = 0; week < numberOfWeeks; week++) {
+    totalWeeks = seasonWeeks; //how many weeks needed to generate
 
-        weekGameCount[week] = 0;
+    for (int week = 0; week < seasonWeeks; week++) //main schedule loop
+    {
 
-        for (int i = 0; i < teamCount / 2; i++) {
+        gamesPerWeek[week] = 0; //resets weekly counter
 
-            Teams* home = teamList[i];
-            Teams* away = teamList[teamCount - 1 - i];
+        for (int i = 0; i < teamCount / 2; i++) //pairs teams
+        {
 
-            if (home == nullptr || away == nullptr) {
+            Teams* home = teamArray[i];
+            Teams* away = teamArray[teamCount - 1 - i];
 
-                Teams* realTeam = home ? home : away;
-
-                weeks[week][weekGameCount[week]++] =
-                        new Game(realTeam, nullptr, true);
+            if (home == nullptr || away == nullptr) //creates bye week
+            {
+                weeks[week][gamesPerWeek[week]++] =
+                        new Game(home, away, true);
             }
-            else {
-                weeks[week][weekGameCount[week]++] =
-                        new Game(home, away);
+            else
+            {
+                if (home != away)//creates game
+                {
+                    weeks[week][gamesPerWeek[week]++] =
+                            new Game(home, away, false);
+                }
             }
         }
 
-        // rotation
-        Teams* last = teamList[teamCount - 1];
+        Teams* last = teamArray[teamCount - 1]; //begins round robin style matchmaking
 
         for (int i = teamCount - 1; i > 1; i--)
-            teamList[i] = teamList[i - 1];
+            teamArray[i] = teamArray[i - 1];
 
-        teamList[1] = last;
+        teamArray[1] = last;
     }
 }
 
-void Schedule::displayGames() const {
+void Schedule::display() //displays schedule
+{
 
-    if (totalWeeks == 0) {
-        std::cout << "No schedule generated.\n";
-        return;
-    }
+    for (int w = 0; w < totalWeeks; w++)
+    {
 
-    for (int week = 0; week < totalWeeks; week++) {
+        std::cout << "\nWeek " << w + 1 << ":\n"; //prints each week of games
 
-        std::cout << "\nWeek " << week + 1 << ":\n";
+        int gameNumber = 1;
 
-        int displayNumber = 1;
+        for (int g = 0; g < gamesPerWeek[w]; g++) //g is game inside w week
+        {
 
-        // Print real games first
-        for (int game = 0; game < weekGameCount[week]; game++) {
+            Game* game = weeks[w][g]; //retrieves both w and g
 
-            Game* g = weeks[week][game];
+            if (game == nullptr) //no game = skip
+                continue;
 
-            if (!g->isByeGame()) {
+            if (!game->isByeGame()) //only true matchups can enter this, no byes
+            {
 
-                std::cout << "  "
-                          << displayNumber << ". "
-                          << g->getHomeTeam()->getName()
+                std::cout << "  " << gameNumber++ << ". " //prints 1. 2. 3. on matchups
+                          << game->getHomeTeam()->getName()
                           << " vs "
-                          << g->getAwayTeam()->getName();
+                          << game->getAwayTeam()->getName(); //prints team name vs team name
 
-                if (g->isPlayed()) {
-                    std::cout << ": "
-                              << g->getHomeScore()
+                if (game->isPlayed()) //looks if game has been played
+                {
+                    std::cout << " : "
+                              << game->getHomeScore()
                               << " - "
-                              << g->getAwayScore();
+                              << game->getAwayScore(); //returns score after game if game has been played
                 }
 
                 std::cout << "\n";
-
-                displayNumber++;
             }
         }
 
-        // Then print BYE last (no numbering)
-        for (int game = 0; game < weekGameCount[week]; game++) {
+        for (int g = 0; g < gamesPerWeek[w]; g++) //same as before
+        {
 
-            Game* g = weeks[week][game];
+            Game* game = weeks[w][g]; //same as before
 
-            if (g->isByeGame()) {
+            if (game == nullptr) //skips empty slots
+                continue;
 
-                std::cout << "  "
-                          << g->getHomeTeam()->getName()
-                          << " - BYE\n";
+            if (game->isByeGame()) //enters if team is on bye
+            {
+
+                if (game->getHomeTeam() == nullptr)
+                    std::cout << "  "
+                              << game->getAwayTeam()->getName()
+                              << " - BYE\n";
+                else
+                    std::cout << "  "
+                              << game->getHomeTeam()->getName()
+                              << " - BYE\n";
             }
         }
     }
 }
 
-Game* Schedule::getGame(int weekIndex, int gameIndex) {
+Game* Schedule::getGame(int weekIndex, int gameIndex) //game pointer
+{
 
-    if (weekIndex >= 0 &&
-        weekIndex < totalWeeks &&
-        gameIndex >= 0 &&
-        gameIndex < weekGameCount[weekIndex])
-        return weeks[weekIndex][gameIndex];
+    if (weekIndex < 0 || weekIndex >= totalWeeks) //checks validity
+        return nullptr;
 
-    return nullptr;
+    if (gameIndex < 0 || gameIndex >= gamesPerWeek[weekIndex]) //checks validity
+        return nullptr;
+
+    return weeks[weekIndex][gameIndex];
 }

@@ -5,11 +5,8 @@
 
 class Scoring {
 
-private:
-    void updatePlayerScores(Teams& team);
-
 public:
-    void updateGameScore(Game& game);
+    void updateGame(Game* game);
 };
 
 #endif

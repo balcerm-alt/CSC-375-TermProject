@@ -1,70 +1,111 @@
 #include "Teams.h"
 #include <iostream>
 
-Teams::Teams() : teamName(""), playerCount(0), wins(0), pointsFor(0), pointsAgainst(0) {}
+//constructor
+Teams::Teams()
+        : name(""), //sets name to empty
+          playerCount(0), //sets player count empty
+          wins(0), //sets wins empty
+          pointsFor(0), //sets points for empty
+          pointsAgainst(0) {} //sets points against empty
 
-Teams::Teams(std::string name) {
-    teamName = name;
-    playerCount = 0;
-    wins = 0;
-    pointsFor = 0;
-    pointsAgainst = 0;
+//main constructor can be edited with inputs
+Teams::Teams(const std::string& teamName)
+        : name(teamName),
+          playerCount(0),
+          wins(0),
+          pointsFor(0),
+          pointsAgainst(0) {}
+
+std::string Teams::getName() const //returns team name
+{
+    return name;
 }
 
-Player* Teams::getPlayer(int index) {
-    if (index >= 0 && index < playerCount)
-        return &players[index];
-    return nullptr;
-}
+void Teams::addPlayer(const Player& p) //adds player to team
+{
 
-int Teams::getPlayerCount() const {
-    return playerCount;
-}
-
-void Teams::addPlayer(const Player& p) {
-    if (playerCount < 50) {
-        players[playerCount++] = p;
+    if (playerCount < MAX_PLAYERS) //prevents overflow of array
+    {
+        players[playerCount] = p; //stores player in next available slots
+        playerCount++;
     }
 }
 
-void Teams::displayRoster() const {
+Player* Teams::getPlayer(int index) //returns pointer to a player
+{
 
-    std::cout << "Team: " << teamName
-              << " | Wins: " << wins
-              << " | Points For: " << pointsFor
-              << " | Points Against: " << pointsAgainst
-              << "\n";
+    if (index < 0 || index >= playerCount) //safety check
+        return nullptr;
 
-    for (int i = 0; i < playerCount; i++) {
+    return &players[index];
+}
 
-        std::cout << "  "
-                  << i + 1 << ". "
+int Teams::getPlayerCount() const //returns number of players on team
+{
+    return playerCount;
+}
+
+void Teams::displayRoster() const //displays roster using 1. 2. 3.
+{
+
+    for (int i = 0; i < playerCount; i++)
+    {
+        std::cout << i + 1 << ". "
+                  << players[i].getName()
+                  << "\n";
+    }
+}
+
+void Teams::displayRosterWithPoints() const //displays team roster with points assigned
+{
+
+    for (int i = 0; i < playerCount; i++)
+    {
+        std::cout << i + 1 << ". "
                   << players[i].getName()
                   << " - "
                   << players[i].getPoints()
                   << "\n";
     }
-
-    std::cout << "\n";
 }
 
-std::string Teams::getName() const {
-    return teamName;
-}
+void Teams::addPoints(int scored, int allowed) //updates team totals
+{
 
-void Teams::addWin() {
-    wins++;
-}
-
-void Teams::addPoints(int scored, int allowed) {
     pointsFor += scored;
     pointsAgainst += allowed;
 }
 
-int Teams::getWins() const {
+void Teams::addWin() //adds wins to teams USED FOR RANKINGS NOT DONE YET
+{
+    wins++;
+}
+
+int Teams::getWins() const //returns wins USED FOR RANKINGS
+{
     return wins;
 }
 
-int Teams::getPointDiff() const {
-    return pointsFor - pointsAgainst;
+int Teams::getPointsFor() const //returns points scored
+{
+    return pointsFor;
+}
+
+int Teams::getPointsAgainst() const //returns points against
+{
+    return pointsAgainst;
+}
+
+void Teams::resetStats() //resets stats
+{
+
+    wins = 0;
+    pointsFor = 0;
+    pointsAgainst = 0;
+
+    for (int i = 0; i < playerCount; i++)
+    {
+        players[i] = Player(players[i].getName());
+    }
 }

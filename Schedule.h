@@ -2,27 +2,26 @@
 #define SCHEDULE_H
 
 #include "Game.h"
-#include "HashTable.h"
+#include "TeamTrees.h"
 
 class Schedule {
 
 private:
-    static const int MAX_WEEKS = 50;
-    static const int MAX_GAMES_PER_WEEK = 20;
+  static const int MAX_WEEKS = 50;
+  static const int MAX_GAMES_PER_WEEK = 25;
 
-    Game* weeks[MAX_WEEKS][MAX_GAMES_PER_WEEK];
-    int weekGameCount[MAX_WEEKS];
-    int totalWeeks;
+  Game* weeks[MAX_WEEKS][MAX_GAMES_PER_WEEK];
+  int gamesPerWeek[MAX_WEEKS];
+  int totalWeeks;
 
 public:
-    Schedule();
+  Schedule();
 
-    void generate(HashTable& teams, int numberOfWeeks);
-    void displayGames() const;
+  void generate(TeamTrees& teams, int seasonWeeks);
+  void display();
+  Game* getGame(int weekIndex, int gameIndex);
 
-    Game* getGame(int weekIndex, int gameIndex);
-
-    void clear();
+  void clear();
 };
 
 #endif

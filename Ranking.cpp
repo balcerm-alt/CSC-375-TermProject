@@ -1,6 +1,7 @@
 #include "Ranking.h"
 #include <iostream>
 
-void Ranking::displayRankings() {
-    std::cout << "Ranking system coming soon...\n";
+void Ranking::display() const
+{
+    std::cout << "Rankings not implemented yet.\n"; //havent done this yet
 }

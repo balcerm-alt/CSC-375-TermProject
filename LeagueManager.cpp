@@ -3,7 +3,6 @@
 #include <cstdlib>
 
 //constructor
-
 LeagueManager::LeagueManager()
         : teamLimit(0),
           playersPerTeam(0),
@@ -11,280 +10,290 @@ LeagueManager::LeagueManager()
           regularSeasonWeeks(0),
           playoffWeeks(0) {}
 
-void LeagueManager::run() {
-    setupLeague();
-    mainMenu();
+void LeagueManager::run() //entry point
+{
+    while (true)
+    {
+        setupLeague(); //asks setup questions
+        mainMenu(); //enters main interface loop
+    }
 }
 
-//helpers
-
-std::string LeagueManager::getLineInput() {
+std::string LeagueManager::getLineInput() //gathering user input
+{
     std::string input;
     std::getline(std::cin, input);
     return input;
 }
 
-int LeagueManager::getIntegerInput() {
-    while (true) {
+int LeagueManager::getIntegerInput() //gathers user input integer form
+{
+    while (true)
+    {
         std::string input = getLineInput();
-        try {
+        try
+        {
             return std::stoi(input);
         }
-        catch (...) {
-            std::cout << "Invalid number. Try again: ";
+        catch (...)
+        {
+            std::cout << "Invalid number. Try again: "; //handles invalid responses
         }
     }
 }
 
-char LeagueManager::getCharInput() {
+char LeagueManager::getCharInput() //Gathers input for (Y/N)
+{
     std::string input = getLineInput();
     if (!input.empty())
         return input[0];
     return '\0';
 }
 
-void LeagueManager::pause() {
+void LeagueManager::pause() //recieves input for pressing enter to close the page
+{
     std::cout << "Close Page (press Enter)...";
     getLineInput();
 }
 
-//setup
-
-void LeagueManager::setupLeague() {
+void LeagueManager::setupLeague() //configuration of the league
+{
 
     std::cout << "\nHello! Welcome to a League of Our Own!\n";
 
     std::cout << "Please Enter Name of Your League: ";
-    leagueName = getLineInput();
+    leagueName = getLineInput(); //names the league off user input
 
     std::cout << "Please Enter Quantity of Teams: ";
-    teamLimit = getIntegerInput();
+    teamLimit = getIntegerInput(); //enters the amount of teams the league will have
 
     std::cout << "Please Enter Quantity of Players per Team: ";
-    playersPerTeam = getIntegerInput();
+    playersPerTeam = getIntegerInput(); //enters the amount of players on a team
 
     std::cout << "Will There Be a Playoff (Y/N): ";
-    char playoffChoice = getCharInput();
+    char playoffChoice = getCharInput(); //allows user to decide if they would like a playoff or not
 
     hasPlayoff = (playoffChoice == 'Y' || playoffChoice == 'y');
 
-    if (hasPlayoff) {
-        std::cout << "How Many Weeks Played Before Playoff: ";
+    if (hasPlayoff) //if there is a playoff there will be a seperate prompt
+    {
+        std::cout << "How Many Weeks In Regular Season: ";
         regularSeasonWeeks = getIntegerInput();
-
         std::cout << "How Many Weeks of Playoff: ";
         playoffWeeks = getIntegerInput();
     }
-    else {
-        regularSeasonWeeks = 0;
+    else //if theres no playoff the standard question for weeks
+    {
+        std::cout << "How Many Weeks in Season: ";
+        regularSeasonWeeks = getIntegerInput();
         playoffWeeks = 0;
     }
 
-    for (int i = 0; i < teamLimit; i++)
+    for (int i = 0; i < teamLimit; i++) //calls add team setup for limit of teams
         addTeamSetup();
 
-    editOrAddLoop();
+    while (true)
+    {
 
-    std::cout << "Generate Schedule? (Y/N): ";
-    char generateChoice = getCharInput();
+        editOrAddLoop(); //calls the edit or add loop
 
-    if (generateChoice == 'Y' || generateChoice == 'y')
-        schedule.generate(teams, regularSeasonWeeks);
+        std::cout << "Generate Schedule? (Y/N): ";//will generate schedule unless user wants to go back
+        char generateChoice = getCharInput();
+
+        if (generateChoice == 'Y' || generateChoice == 'y')
+        {
+            schedule.generate(teams, regularSeasonWeeks);
+            break;
+        }
+    }
 }
 
-void LeagueManager::addTeamSetup() {
+void LeagueManager::addTeamSetup()
+{
 
-    std::cout << "\nAdd Team Name: ";
+    std::cout << "\nAdd Team Name: ";//user input for team name
     std::string teamName = getLineInput();
 
     Teams newTeam(teamName);
 
     std::cout << "Add Players:\n";
 
-    for (int i = 0; i < playersPerTeam; i++) {
-        std::cout << "Player " << i + 1 << ": ";
+    for (int i = 0; i < playersPerTeam; i++)
+    {
+        std::cout << "Player " << i + 1 << ": "; //asks for user name and assigns number
         std::string playerName = getLineInput();
         newTeam.addPlayer(Player(playerName));
     }
 
-    teams.insert(teamName, newTeam);
+    teams.insert(newTeam); //adds team/players
 }
 
-void LeagueManager::editOrAddLoop() {
+void LeagueManager::editOrAddLoop() //loop to add teams or edit players
+{
 
-    while (true) {
-        std::cout << "\nWould You Like To Add Teams or Edit Players (Y/N): ";
-        char choice = getCharInput();
+    std::cout << "\nWould You Like To Add Teams or Edit Players (Y/N): ";
+    char choice = getCharInput();
 
-        if (choice == 'N' || choice == 'n')
-            break;
+    if (choice == 'N' || choice == 'n')
+        return;
 
-        std::cout << "1. Add Teams\n";
-        std::cout << "2. Edit Players\n";
-        std::cout << "Select Option: ";
+    std::cout << "1. Add Teams\n";
+    std::cout << "2. Edit Players\n";
+    std::cout << "Select Option: ";
 
-        int option = getIntegerInput();
+    int option = getIntegerInput(); //gathers input
 
-        if (option == 1)
-            addTeamSetup();
-        else if (option == 2)
-            editPlayers();
-    }
+    if (option == 1)
+        addTeamSetup();
+    else if (option == 2)
+        editPlayers();
 }
 
-void LeagueManager::editPlayers() {
+void LeagueManager::editPlayers()
+{
 
-    teams.displayAll();
+    teams.displayAll(); //displays teams
 
-    std::cout << "Enter Team Name To Edit: ";
+    std::cout << "Enter Team Name To Edit: ";//search for team to edit player
     std::string teamName = getLineInput();
 
     Teams* team = teams.search(teamName);
 
-    if (team == nullptr) {
+    if (team == nullptr) //validation
+    {
         std::cout << "Team not found.\n";
         return;
     }
 
-    team->displayRoster();
+    team->displayRoster(); //displays roster with name and assigned number
 
     std::cout << "Select Player To Edit (number): ";
     int selection = getIntegerInput();
 
     Player* player = team->getPlayer(selection - 1);
 
-    if (player != nullptr) {
+    if (player != nullptr)
+    {
         std::cout << "Enter New Player Name: ";
         std::string newName = getLineInput();
-        *player = Player(newName);
+        player->setName(newName); //changed player name
         std::cout << "Player Updated.\n";
     }
 }
 
-// ================= MAIN MENU =================
+void LeagueManager::mainMenu() //main interface for league
+{
 
-void LeagueManager::mainMenu() {
-
-    while (true) {
+    while (true)
+    {
 
         std::cout << "\n===== " << leagueName << " =====\n";
-        std::cout << "1. Edit Setup\n";
-        std::cout << "2. View Schedule\n";
-        std::cout << "3. Add Score\n";
-        std::cout << "4. Edit Score\n";
-        std::cout << "5. View Scores\n";
-        std::cout << "6. Rankings\n";
-        std::cout << "7. Clear\n";
-        std::cout << "8. Close Application\n";
+        std::cout << "1. View Schedule\n";
+        std::cout << "2. Add Score\n";
+        std::cout << "3. View Scores\n";
+        std::cout << "4. Rankings\n";
+        std::cout << "5. Clear\n";
+        std::cout << "6. Close Application\n";
         std::cout << "Select Option: ";
 
-        int choice = getIntegerInput();
+        int choice = getIntegerInput(); //gathers input for what user would like to do in interface
 
-        switch (choice) {
+        switch (choice) //assigns numbers to interface for user selection
+        {
 
-            case 1: setupLeague(); break;
-            case 2: viewSchedule(); break;
-            case 3: addScore(); break;
-            case 4: editScore(); break;
-            case 5: viewScores(); break;
-            case 6: rankingsStub(); break;
-            case 7: clearAll(); break;
+            case 1: viewSchedule(); break; //views the generated schedule
+            case 2: addScore(); break; //sends to page to assigns scores to team and player
+            case 3: viewScores(); break; //views scores
+            case 4: rankingsStub(); break; //ranking NOT SET UP YET
+            case 5: clearAll(); break; //clears application
 
-            case 8: {
+            case 6: //closes application
+            {
                 std::cout << "Would You Like To Close (Y/N): ";
-                char closeChoice = getCharInput();
-                if (closeChoice == 'Y' || closeChoice == 'y') {
-                    std::cout << "\nApplication Closed.\n";
-                    std::exit(0);
-                }
-                break;
+                char c = getCharInput();
+                if ( c == 'Y' || c =='y');
+                std::exit(0);
             }
 
             default:
-                std::cout << "Invalid Option.\n";
+                std::cout << "Invalid Option.\n"; //validation
         }
     }
 }
 
-// ================= MENU ACTIONS =================
-
-void LeagueManager::viewSchedule() {
-    schedule.displayGames();
+void LeagueManager::viewSchedule() //shows generated schedule
+{
+    schedule.display();
     pause();
 }
 
-void LeagueManager::addScore() {
+void LeagueManager::addScore() //interface to add score to team and player by week
+{
 
-    schedule.displayGames();
+    schedule.display();
 
-    std::cout << "\nSelect Week Number: ";
+    std::cout << "\nSelect Week Number: "; //select the week number you would like to add score to
     int week = getIntegerInput();
     int weekIndex = week - 1;
 
-    std::cout << "Select Game Number: ";
+    std::cout << "Select Game Number: "; //select which game that week you will be adding score to
     int selection = getIntegerInput();
 
-    int gameCounter = 0;
+    int realGameCounter = 0; //counts real game
     Game* selectedGame = nullptr;
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 50; i++)
+    {
 
-        Game* g = schedule.getGame(weekIndex, i);
-        if (g == nullptr)
+        Game* g = schedule.getGame(weekIndex, i); //retrieves game stored at selected
+
+        if (g == nullptr) //stop the loop
             break;
 
-        if (!g->isByeGame()) {
-            gameCounter++;
-            if (gameCounter == selection) {
+        if (!g->isByeGame()) //ignores bye
+        {
+            realGameCounter++;
+
+            if (realGameCounter == selection)
+            {
                 selectedGame = g;
                 break;
             }
         }
     }
 
-    if (selectedGame == nullptr) {
-        std::cout << "Invalid selection.\n";
+    if (selectedGame == nullptr)
+    {
+        std::cout << "Invalid selection.\n"; //validation
         return;
     }
 
-    scoring.updateGameScore(*selectedGame);
+    scoring.updateGame(selectedGame);//updates the score
 }
 
-void LeagueManager::editScore() {
-    std::cout << "Edit Score Not Implemented Yet.\n";
-    pause();
-}
-
-void LeagueManager::viewScores() {
+void LeagueManager::viewScores() //shows team and player scores
+{
     teams.displayAll();
     pause();
 }
 
-void LeagueManager::rankingsStub() {
+void LeagueManager::rankingsStub() //shows rankings NOT DONE YET
+{
     std::cout << "Rankings Not Implemented Yet.\n";
     pause();
 }
 
-void LeagueManager::clearAll() {
+void LeagueManager::clearAll() //clears all stored info back to beginning
+{
 
-    std::cout << "Would You Like To Clear (Y/N): ";
+    std::cout << "Would You Like To Clear (Y/N): "; //validation so you dont accidentally clear everything
+
     char choice = getCharInput();
-
-    if (choice == 'Y' || choice == 'y') {
-
-        teams = HashTable();
-        schedule = Schedule();
-        scoring = Scoring();
-
-        leagueName = "";
-        teamLimit = 0;
-        playersPerTeam = 0;
-        regularSeasonWeeks = 0;
-        playoffWeeks = 0;
-        hasPlayoff = false;
-
+    if (choice == 'Y' || choice == 'y')
+    {
+        teams.clear();
+        schedule.clear();
         std::cout << "\nSystem Cleared.\n";
-
         setupLeague();
     }
 }

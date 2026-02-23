@@ -19,4 +19,6 @@ add_executable(Term_Project main.cpp
         HashTable.cpp
         HashTable.h
         Game.cpp
-        Game.h)
+        Game.h
+        TeamTrees.cpp
+        TeamTrees.h)
