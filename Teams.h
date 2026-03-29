@@ -14,6 +14,8 @@ private:
     int playerCount;
 
     int wins;
+    int losses;
+    int ties;
     int pointsFor;
     int pointsAgainst;
 
@@ -30,14 +32,25 @@ public:
 
     void displayRoster() const;
     void displayRosterWithPoints() const;
+    void displayTeamStats() const;
 
     // Team scoring
     void addPoints(int scored, int allowed);
     void addWin();
+    void addLoss();
+    void addTie();
 
     int getWins() const;
+    int getLosses() const;
+    int getTies() const;
     int getPointsFor() const;
     int getPointsAgainst() const;
+    int getTotalRegularPlayerPoints() const;
+    int getTotalPlayoffPlayerPoints() const;
+    int getTotalPlayerPoints() const;
+    int getPointDifferential() const;
+
+    Player* getHighestTotalPointPlayer();
 
     void resetStats();
 };

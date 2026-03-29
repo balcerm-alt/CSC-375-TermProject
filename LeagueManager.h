@@ -4,6 +4,10 @@
 #include "TeamTrees.h"
 #include "Schedule.h"
 #include "Scoring.h"
+#include "HashTable.h"
+#include "Prediction.h"
+#include "Playoff.h"
+#include "Rankings.h"
 #include <string>
 
 class LeagueManager {
@@ -12,6 +16,10 @@ private:
     TeamTrees teams;
     Schedule schedule;
     Scoring scoring;
+    HashTable teamTable;
+    Prediction prediction;
+    Playoff playoff;
+    Rankings rankings;
 
     std::string leagueName;
 
@@ -20,7 +28,7 @@ private:
 
     bool hasPlayoff;
     int regularSeasonWeeks;
-    int playoffWeeks;
+    int playoffTeamCount;
 
     void setupLeague();
     void addTeamSetup();
@@ -29,15 +37,27 @@ private:
 
     void mainMenu();
     void viewSchedule();
-    void addScore();
     void viewScores();
-    void rankingsStub();
+    void addRegularSeasonScore();
+    void viewPredictions();
+    void rankingsMenu();
+    void playoffMenu();
     void clearAll();
 
+    bool regularSeasonComplete();
+    bool isValidPlayoffSize(int size);
+    void printValidPlayoffOptions();
+    Player* getMVP();
+
+    void rebuildHashTable();
+
     std::string getLineInput();
+    std::string getRequiredLineInput();
     int getIntegerInput();
+    int getPositiveIntegerInput();
     char getCharInput();
     void pause();
+    void showChampionScreen();
 
 public:
     LeagueManager();

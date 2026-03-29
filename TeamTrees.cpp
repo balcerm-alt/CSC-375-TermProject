@@ -13,7 +13,6 @@ TeamTrees::~TeamTrees()
 //function that deletes nodes
 void TeamTrees::clearHelper(Node*& node)
 {
-
     if (node == nullptr)
         return;
 
@@ -32,7 +31,6 @@ void TeamTrees::clear()
 
 void TeamTrees::insertHelper(Node*& node, const Teams& team)
 {
-
     if (node == nullptr)
     {
         node = new Node(team); //creates new node
@@ -52,7 +50,6 @@ void TeamTrees::insert(const Teams& team) //public function starts insertion fro
 
 Teams* TeamTrees::searchHelper(Node* node, const std::string& name)
 {
-
     if (node == nullptr) //if empty, not found
         return nullptr;
 
@@ -72,15 +69,12 @@ Teams* TeamTrees::search(const std::string& name) //public function
 
 void TeamTrees::displayHelper(Node* node) const //prints tree in sorted order
 {
-
     if (node == nullptr)
         return;
 
     displayHelper(node->left);
 
-    std::cout << "Team: " << node->team.getName() << "\n";
-    node->team.displayRosterWithPoints();
-    std::cout << "\n";
+    node->team.displayTeamStats();
 
     displayHelper(node->right); //prints teams alphabetically
 }
@@ -92,7 +86,6 @@ void TeamTrees::displayAll() const //starts traversal at root
 
 void TeamTrees::fillArrayHelper(Node* node, Teams* arr[], int& count)
 {
-
     if (node == nullptr)
         return;
 
@@ -103,7 +96,6 @@ void TeamTrees::fillArrayHelper(Node* node, Teams* arr[], int& count)
 
 void TeamTrees::fillArray(Teams* arr[], int& count) //initializes then fills array
 {
-
     count = 0;
     fillArrayHelper(root, arr, count);
 }

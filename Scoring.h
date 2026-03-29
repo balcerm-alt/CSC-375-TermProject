@@ -6,7 +6,7 @@
 class Scoring {
 
 public:
-    void updateGame(Game* game);
+    void updateGame(Game* game, bool isPlayoff = false);
 };
 
 #endif

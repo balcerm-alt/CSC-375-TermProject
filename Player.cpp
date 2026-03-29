@@ -2,25 +2,40 @@
 
 //constructor
 Player::Player()
-        : name(""), points(0) {}
+        : name(""), regularPoints(0), playoffPoints(0) {}
 
 //main constructor
 Player::Player(const std::string& n)
-        : name(n), points(0) {}
+        : name(n), regularPoints(0), playoffPoints(0) {}
 
 std::string Player::getName() const //returns player name
 {
     return name;
 }
 
-void Player::addPoints(int pts) //adds point to player
+void Player::addRegularPoints(int pts) //adds regular season points to player
 {
-    points += pts;
+    regularPoints += pts;
 }
 
-int Player::getPoints() const //returns player points
+void Player::addPlayoffPoints(int pts) //adds playoff points to player
 {
-    return points;
+    playoffPoints += pts;
+}
+
+int Player::getRegularPoints() const //returns regular season points
+{
+    return regularPoints;
+}
+
+int Player::getPlayoffPoints() const //returns playoff points
+{
+    return playoffPoints;
+}
+
+int Player::getTotalPoints() const //returns total points
+{
+    return regularPoints + playoffPoints;
 }
 
 void Player::setName(const std::string& newName) //allows player to be renamed

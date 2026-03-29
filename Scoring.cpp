@@ -19,85 +19,126 @@ static int getSafeInt() //used for a safe integer
     }
 }
 
-static char getSafeChar() //used for safe character for (Y/N)
+void Scoring::updateGame(Game* game, bool isPlayoff) //updates score for team, team total, team wins/losses and player points
 {
-    std::string input;
-    std::getline(std::cin, input);
-    if (!input.empty())
-        return input[0];
-    return '\0';
-}
-
-void Scoring::updateGame(Game* game) //updates score for team, team total, team wins(When rankings are done) and player points
-{
-
     if (game == nullptr || game->isByeGame()) //safety check for bye weeks
     {
         std::cout << "Cannot score a BYE game.\n";
         return;
     }
 
+    if (game->isPlayed()) //prevents rescoring games
+    {
+        std::cout << "This game has already been scored... (Press Enter)";
+        std::string pause;
+        std::getline(std::cin, pause);
+        return;
+    }
+
     Teams* home = game->getHomeTeam(); //pointer to home team
     Teams* away = game->getAwayTeam(); //pointer to away team
 
-    std::cout << "\n" << home->getName() << " Score: "; //home team score
-    int homeScore = getSafeInt();
+    int homeScore;
+    int awayScore;
 
-    std::cout << away->getName() << " Score: "; //away team score
-    int awayScore = getSafeInt();
+    while (true)
+    {
+        std::cout << "\n" << home->getName() << " Score: "; //home team score
+        homeScore = getSafeInt();
+
+        std::cout << away->getName() << " Score: "; //away team score
+        awayScore = getSafeInt();
+
+        if (isPlayoff && homeScore == awayScore)
+        {
+            std::cout << "Playoff games cannot end in a tie. Re-enter scores.\n";
+            continue;
+        }
+
+        break;
+    }
 
     game->setScore(homeScore, awayScore); //updates so score will be seen on schedule
 
-    home->addPoints(homeScore, awayScore); //updates points scored and allowed for rankings for home
-    away->addPoints(awayScore, homeScore); //updates points scored and allowed for rankings for away
+    home->addPoints(homeScore, awayScore); //updates points scored and allowed for home
+    away->addPoints(awayScore, homeScore); //updates points scored and allowed for away
 
-    if (homeScore > awayScore) //updates wins for home
+    if (homeScore > awayScore) //updates wins/losses
+    {
         home->addWin();
-    else if (awayScore > homeScore) //updates wins for away
+        away->addLoss();
+    }
+    else if (awayScore > homeScore)
+    {
         away->addWin();
+        home->addLoss();
+    }
+    else
+    {
+        home->addTie();
+        away->addTie();
+    }
 
-
-    std::cout << "\nUpdating individual scoring for " //player scoring section
+    std::cout << "\nUpdating individual scoring for "
               << home->getName() << "\n";
 
-    home->displayRosterWithPoints(); //displays roster with current scored points
+    home->displayRosterWithPoints();
 
-    while (true) //allows adding mulitple player scores
+    int homeRemaining = homeScore;
+
+    while (homeRemaining > 0)
     {
-
+        std::cout << "Remaining team points to assign: " << homeRemaining << "\n";
         std::cout << "Select player: ";
-        int selection = getSafeInt(); //user sees player number starting at 1
+        int selection = getSafeInt();
 
-        Player* player = home->getPlayer(selection - 1); //code sees user input and subtracts 1 to start at 0
+        Player* player = home->getPlayer(selection - 1);
 
-        if (player == nullptr) //invalid number = loop conitnues
+        if (player == nullptr)
         {
             std::cout << "Invalid selection.\n";
             continue;
         }
 
-        std::cout << player->getName() << "'s Score: ";
-        int pts = getSafeInt(); //allows user input players points
+        while (true)
+        {
+            std::cout << player->getName() << "'s Score: ";
+            int pts = getSafeInt();
 
-        player->addPoints(pts); //adds player points
+            if (pts < 0)
+            {
+                std::cout << "Score cannot be negative.\n";
+                continue;
+            }
+
+            if (pts > homeRemaining)
+            {
+                std::cout << "You only have " << homeRemaining << " team points left to assign.\n";
+                continue;
+            }
+
+            if (isPlayoff)
+                player->addPlayoffPoints(pts);
+            else
+                player->addRegularPoints(pts);
+
+            homeRemaining -= pts;
+            break;
+        }
 
         std::cout << "Updated.\n";
-        std::cout << "Add Another? (Y/N): "; //asks for any other point input
-
-        char choice = getSafeChar();
-        if (choice == 'N' || choice == 'n') //n breaks loop
-            break;
     }
 
-
-    std::cout << "\nUpdating individual scoring for " //repeats for away team
+    std::cout << "\nUpdating individual scoring for "
               << away->getName() << "\n";
 
     away->displayRosterWithPoints();
 
-    while (true)
-    {
+    int awayRemaining = awayScore;
 
+    while (awayRemaining > 0)
+    {
+        std::cout << "Remaining team points to assign: " << awayRemaining << "\n";
         std::cout << "Select player: ";
         int selection = getSafeInt();
 
@@ -109,17 +150,33 @@ void Scoring::updateGame(Game* game) //updates score for team, team total, team 
             continue;
         }
 
-        std::cout << player->getName() << "'s Score: ";
-        int pts = getSafeInt();
+        while (true)
+        {
+            std::cout << player->getName() << "'s Score: ";
+            int pts = getSafeInt();
 
-        player->addPoints(pts);
+            if (pts < 0)
+            {
+                std::cout << "Score cannot be negative.\n";
+                continue;
+            }
+
+            if (pts > awayRemaining)
+            {
+                std::cout << "You only have " << awayRemaining << " team points left to assign.\n";
+                continue;
+            }
+
+            if (isPlayoff)
+                player->addPlayoffPoints(pts);
+            else
+                player->addRegularPoints(pts);
+
+            awayRemaining -= pts;
+            break;
+        }
 
         std::cout << "Updated.\n";
-        std::cout << "Add Another? (Y/N): ";
-
-        char choice = getSafeChar();
-        if (choice == 'N' || choice == 'n')
-            break;
     }
 
     std::cout << "\nGame Updated Successfully.\n"; //completion verification

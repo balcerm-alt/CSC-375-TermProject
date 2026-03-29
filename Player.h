@@ -7,7 +7,8 @@ class Player {
 
 private:
     std::string name;
-    int points;
+    int regularPoints;
+    int playoffPoints;
 
 public:
     Player();
@@ -15,8 +16,12 @@ public:
 
     std::string getName() const;
 
-    void addPoints(int pts);
-    int getPoints() const;
+    void addRegularPoints(int pts);
+    void addPlayoffPoints(int pts);
+
+    int getRegularPoints() const;
+    int getPlayoffPoints() const;
+    int getTotalPoints() const;
 
     void setName(const std::string& newName);
 };

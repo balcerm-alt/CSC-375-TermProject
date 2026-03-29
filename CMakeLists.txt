@@ -10,8 +10,6 @@ add_executable(Term_Project main.cpp
         Schedule.h
         Scoring.cpp
         Scoring.h
-        Ranking.cpp
-        Ranking.h
         LeagueManager.cpp
         LeagueManager.h
         Player.cpp
@@ -21,4 +19,10 @@ add_executable(Term_Project main.cpp
         Game.cpp
         Game.h
         TeamTrees.cpp
-        TeamTrees.h)
+        TeamTrees.h
+        Prediction.cpp
+        Prediction.h
+        Playoff.cpp
+        Playoff.h
+        Rankings.cpp
+        Rankings.h)
