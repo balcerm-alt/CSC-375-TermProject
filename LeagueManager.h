@@ -10,8 +10,8 @@
 #include "Rankings.h"
 #include <string>
 
-class LeagueManager {
-
+class LeagueManager
+{
 private:
     TeamTrees teams;
     Schedule schedule;
@@ -64,8 +64,11 @@ private:
     bool TeamsFile(const std::string& filename);
     bool ScoresFile(const std::string& filename);
 
+    Game* findScheduledGameFlexible(int weekIndex, const std::string& teamA, const std::string& teamB, bool& fileOrderMatchesSchedule);
+    void applyPlayerPointsFromLine(Teams* team, const std::string& line);
+
     std::string clean(const std::string& str);
-    bool startsWith(const std::string&str, const std::string& prefix);
+    bool startsWith(const std::string& str, const std::string& prefix);
 
 public:
     LeagueManager();

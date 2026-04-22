@@ -49,4 +49,4 @@ public:
     Teams* getChampion();
 };
 
-#endif#endif
+#endif

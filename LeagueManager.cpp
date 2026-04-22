@@ -4,24 +4,25 @@
 #include <fstream>
 #include <sstream>
 
-//constructor
 LeagueManager::LeagueManager()
     : teamLimit(0),
       playersPerTeam(0),
       hasPlayoff(false),
       regularSeasonWeeks(0),
-      playoffTeamCount(0){}
+      playoffTeamCount(0)
+{
+}
 
-void LeagueManager::run() //entry point
+void LeagueManager::run()
 {
     while (true)
     {
-        setupLeague(); //asks setup questions
-        mainMenu(); //enters main interface loop
+        setupLeague();
+        mainMenu();
     }
 }
 
-std::string LeagueManager::getLineInput() //gathering user input
+std::string LeagueManager::getLineInput()
 {
     std::string input;
     std::getline(std::cin, input);
@@ -34,7 +35,8 @@ std::string LeagueManager::getRequiredLineInput()
     {
         std::string input = getLineInput();
         bool hasRealText = false;
-        for (int i = 0; i < input.length(); i++)
+
+        for (int i = 0; i < static_cast<int>(input.length()); i++)
         {
             if (input[i] != ' ' && input[i] != '\t')
             {
@@ -42,29 +44,33 @@ std::string LeagueManager::getRequiredLineInput()
                 break;
             }
         }
+
         if (hasRealText)
             return input;
+
         std::cout << "Input cannot be blank. Try again: ";
     }
 }
 
-int LeagueManager::getIntegerInput() //gathers user input integer form
+int LeagueManager::getIntegerInput()
 {
     while (true)
     {
         std::string input = getLineInput();
+
         if (input.empty())
         {
             std::cout << "Invalid number. Try again: ";
             continue;
         }
+
         try
         {
             return std::stoi(input);
         }
         catch (...)
         {
-            std::cout << "Invalid number. Try again: "; //handles invalid responses
+            std::cout << "Invalid number. Try again: ";
         }
     }
 }
@@ -74,34 +80,38 @@ int LeagueManager::getPositiveIntegerInput()
     while (true)
     {
         int value = getIntegerInput();
+
         if (value > 0)
             return value;
+
         std::cout << "Enter a number greater than 0: ";
     }
 }
 
-char LeagueManager::getCharInput() //Gathers input for (Y/N)
+char LeagueManager::getCharInput()
 {
     while (true)
     {
         std::string input = getLineInput();
+
         if (input.length() == 1)
         {
             char c = input[0];
             if (c == 'Y' || c == 'y' || c == 'N' || c == 'n')
                 return c;
         }
+
         std::cout << "Please enter Y or N: ";
     }
 }
 
-void LeagueManager::pause() //recieves input for pressing enter to close the page
+void LeagueManager::pause()
 {
     std::cout << "Close Page (press Enter)...";
     getLineInput();
 }
 
-bool LeagueManager::isValidPlayoffSize(int size) //validates proper playoff bracket
+bool LeagueManager::isValidPlayoffSize(int size)
 {
     if (size == 2 && teamLimit >= 2)
         return true;
@@ -109,32 +119,53 @@ bool LeagueManager::isValidPlayoffSize(int size) //validates proper playoff brac
         return true;
     if (size == 8 && teamLimit >= 8)
         return true;
+
     return false;
 }
 
-void LeagueManager::printValidPlayoffOptions() //prints options for playoff
+void LeagueManager::printValidPlayoffOptions()
 {
     std::cout << "How many teams in playoff (";
+
+    bool first = true;
+
     if (teamLimit >= 2)
+    {
         std::cout << "2";
+        first = false;
+    }
+
     if (teamLimit >= 4)
-        std::cout << ", 4";
+    {
+        if (!first)
+            std::cout << ", ";
+        std::cout << "4";
+        first = false;
+    }
+
     if (teamLimit >= 8)
-        std::cout << ", 8";
+    {
+        if (!first)
+            std::cout << ", ";
+        std::cout << "8";
+    }
+
     std::cout << "): ";
 }
 
-void LeagueManager::rebuildHashTable() //rebuilds hash table for fast team lookup
+void LeagueManager::rebuildHashTable()
 {
     Teams* arr[100];
     int count = 0;
+
     teams.fillArray(arr, count);
     teamTable.clear();
+
     for (int i = 0; i < count; i++)
         teamTable.insert(arr[i]->getName(), arr[i]);
 }
 
-void LeagueManager::setupLeague() //configuration of the league
+void LeagueManager::setupLeague()
 {
     teams.clear();
     schedule.clear();
@@ -153,10 +184,8 @@ void LeagueManager::setupLeague() //configuration of the league
 
     if (setupChoice == 2)
     {
-        // Load teams from file
         loadTeamsFromFile();
 
-        // Count loaded teams
         Teams* tempArray[100];
         int count = 0;
         teams.fillArray(tempArray, count);
@@ -170,51 +199,54 @@ void LeagueManager::setupLeague() //configuration of the league
         else
         {
             std::cout << "\nLoaded " << teamLimit << " teams.\n";
-            // Determine players per team from first team
             if (count > 0)
                 playersPerTeam = tempArray[0]->getPlayerCount();
         }
     }
 
-    // Manual setup
     if (setupChoice == 1)
     {
         std::cout << "Please Enter Name of Your League: ";
-        leagueName = getRequiredLineInput();    //names the league off user input
+        leagueName = getRequiredLineInput();
 
         while (true)
         {
             std::cout << "Please Enter Quantity of Teams (max 10): ";
-            teamLimit = getPositiveIntegerInput();  //enters the amount of teams the league will have
+            teamLimit = getPositiveIntegerInput();
+
             if (teamLimit > 10)
             {
                 std::cout << "Maximum teams allowed is 10.\n";
                 continue;
             }
+
             if (teamLimit < 2)
             {
                 std::cout << "You need at least 2 teams.\n";
                 continue;
             }
+
             break;
         }
 
         while (true)
         {
             std::cout << "Please Enter Quantity of Players per Team (max 6): ";
-            playersPerTeam = getPositiveIntegerInput(); //enters the amount of players on a team
+            playersPerTeam = getPositiveIntegerInput();
+
             if (playersPerTeam > 6)
             {
                 std::cout << "Maximum players per team is 6.\n";
                 continue;
             }
+
             break;
         }
 
         for (int i = 0; i < teamLimit; i++)
             addTeamSetup();
     }
-    else  // Get name after file load
+    else
     {
         std::cout << "Please Enter Name of Your League: ";
         leagueName = getRequiredLineInput();
@@ -223,21 +255,23 @@ void LeagueManager::setupLeague() //configuration of the league
     int maxRegularSeasonWeeks = teamLimit - 1;
 
     std::cout << "Will There Be a Playoff (Y/N): ";
-    char playoffChoice = getCharInput();   //allows user to decide if they would like a playoff or not
+    char playoffChoice = getCharInput();
     hasPlayoff = (playoffChoice == 'Y' || playoffChoice == 'y');
 
-    if (hasPlayoff)      //if there is a playoff there will be a seperate prompt
+    if (hasPlayoff)
     {
         while (true)
         {
             std::cout << "How Many Weeks In Regular Season (max " << maxRegularSeasonWeeks << "): ";
             regularSeasonWeeks = getPositiveIntegerInput();
+
             if (regularSeasonWeeks > maxRegularSeasonWeeks)
             {
                 std::cout << "Maximum regular season weeks is " << maxRegularSeasonWeeks
                           << " so each team only plays each other once.\n";
                 continue;
             }
+
             break;
         }
 
@@ -245,37 +279,41 @@ void LeagueManager::setupLeague() //configuration of the league
         {
             printValidPlayoffOptions();
             playoffTeamCount = getPositiveIntegerInput();
+
             if (!isValidPlayoffSize(playoffTeamCount))
             {
                 std::cout << "Invalid playoff size. Try again.\n";
                 continue;
             }
+
             break;
         }
     }
-    else        //if theres no playoff the standard question for weeks
+    else
     {
         while (true)
         {
             std::cout << "How Many Weeks in Season (max " << maxRegularSeasonWeeks << "): ";
             regularSeasonWeeks = getPositiveIntegerInput();
+
             if (regularSeasonWeeks > maxRegularSeasonWeeks)
             {
                 std::cout << "Maximum season weeks is " << maxRegularSeasonWeeks
                           << " so each team only plays each other once.\n";
                 continue;
             }
+
             break;
         }
+
         playoffTeamCount = 0;
     }
 
-    // Rebuild hash table before generating schedule
     rebuildHashTable();
 
     while (true)
     {
-        std::cout << "Generate Schedule? (Y/N): ";  //will generate schedule unless user wants to go back
+        std::cout << "Generate Schedule? (Y/N): ";
         char generateChoice = getCharInput();
 
         if (generateChoice == 'Y' || generateChoice == 'y')
@@ -284,13 +322,13 @@ void LeagueManager::setupLeague() //configuration of the league
             break;
         }
 
-        editOrAddLoop();    //calls the edit or add loop after selecting no
+        editOrAddLoop();
     }
 }
 
 void LeagueManager::addTeamSetup()
 {
-    std::cout << "\nAdd Team Name: ";   //user input for team name
+    std::cout << "\nAdd Team Name: ";
     std::string teamName = getRequiredLineInput();
 
     Teams newTeam(teamName);
@@ -299,16 +337,16 @@ void LeagueManager::addTeamSetup()
 
     for (int i = 0; i < playersPerTeam; i++)
     {
-        std::cout << "Player " << i + 1 << ": ";    //asks for user name and assigns number
+        std::cout << "Player " << i + 1 << ": ";
         std::string playerName = getRequiredLineInput();
         newTeam.addPlayer(Player(playerName));
     }
 
-    teams.insert(newTeam);  //adds team/players
+    teams.insert(newTeam);
     rebuildHashTable();
 }
 
-void LeagueManager::editOrAddLoop() //loop to add teams or edit players
+void LeagueManager::editOrAddLoop()
 {
     while (true)
     {
@@ -317,7 +355,7 @@ void LeagueManager::editOrAddLoop() //loop to add teams or edit players
         std::cout << "3. Back\n";
         std::cout << "Select Option: ";
 
-        int option = getIntegerInput();     //gathers input
+        int option = getIntegerInput();
 
         if (option == 1)
             addTeamSetup();
@@ -333,20 +371,20 @@ void LeagueManager::editOrAddLoop() //loop to add teams or edit players
 void LeagueManager::editPlayers()
 {
     rebuildHashTable();
-    teams.displayAll();     //displays teams
+    teams.displayAll();
 
-    std::cout << "Enter Team Name To Edit: ";   //search for team to edit player
+    std::cout << "Enter Team Name To Edit: ";
     std::string teamName = getRequiredLineInput();
 
     Teams* team = teamTable.get(teamName);
 
-    if (team == nullptr)    //validation
+    if (team == nullptr)
     {
         std::cout << "Team not found.\n";
         return;
     }
 
-    team->displayRoster();  //displays roster with name and assigned number
+    team->displayRoster();
 
     std::cout << "Select Player To Edit (number): ";
     int selection = getPositiveIntegerInput();
@@ -357,7 +395,7 @@ void LeagueManager::editPlayers()
     {
         std::cout << "Enter New Player Name: ";
         std::string newName = getRequiredLineInput();
-        player->setName(newName); //changed player name
+        player->setName(newName);
         std::cout << "Player Updated.\n";
     }
     else
@@ -365,7 +403,8 @@ void LeagueManager::editPlayers()
         std::cout << "Invalid selection.\n";
     }
 }
-void LeagueManager::mainMenu() //main interface for league
+
+void LeagueManager::mainMenu()
 {
     while (true)
     {
@@ -381,9 +420,10 @@ void LeagueManager::mainMenu() //main interface for league
         if (!playoff.isGenerated())
         {
             std::cout << "2. Add Score (Manual)\n";
-            std::cout << "3. View Stats\n";
-            std::cout << "4. Rankings\n";
-            std::cout << "5. Predictions\n";
+            std::cout << "3. Load Scores from File\n";
+            std::cout << "4. View Stats\n";
+            std::cout << "5. Rankings\n";
+            std::cout << "6. Predictions\n";
         }
         else
         {
@@ -396,9 +436,9 @@ void LeagueManager::mainMenu() //main interface for league
         {
             if (!playoff.isGenerated())
             {
-                std::cout << "6. Playoffs\n";
-                std::cout << "7. Clear\n";
-                std::cout << "8. Close Application\n";
+                std::cout << "7. Playoffs\n";
+                std::cout << "8. Clear\n";
+                std::cout << "9. Close Application\n";
             }
             else
             {
@@ -422,24 +462,23 @@ void LeagueManager::mainMenu() //main interface for league
         }
 
         std::cout << "Select Option: ";
-
-        int choice = getIntegerInput(); //gathers input for what user would like to do in interface
+        int choice = getIntegerInput();
 
         if (hasPlayoff)
         {
             if (!playoff.isGenerated())
             {
-                // Regular season menu
                 switch (choice)
                 {
                     case 1: viewSchedule(); break;
                     case 2: addRegularSeasonScore(); break;
-                    case 3: viewScores(); break;
-                    case 4: rankingsMenu(); break;
-                    case 5: viewPredictions(); break;
-                    case 6: playoffMenu(); break;
-                    case 7: clearAll(); break;
-                    case 8:
+                    case 3: loadScoresFromFile(); break;
+                    case 4: viewScores(); break;
+                    case 5: rankingsMenu(); break;
+                    case 6: viewPredictions(); break;
+                    case 7: playoffMenu(); break;
+                    case 8: clearAll(); break;
+                    case 9:
                     {
                         std::cout << "Would You Like To Close (Y/N): ";
                         char c = getCharInput();
@@ -453,7 +492,6 @@ void LeagueManager::mainMenu() //main interface for league
             }
             else
             {
-                // Playoff generated menu
                 switch (choice)
                 {
                     case 1: viewSchedule(); break;
@@ -477,18 +515,18 @@ void LeagueManager::mainMenu() //main interface for league
         }
         else
         {
-            // No playoff menu
             if (!playoff.isGenerated())
             {
                 switch (choice)
                 {
                     case 1: viewSchedule(); break;
                     case 2: addRegularSeasonScore(); break;
-                    case 3: viewScores(); break;
-                    case 4: rankingsMenu(); break;
-                    case 5: viewPredictions(); break;
-                    case 6: clearAll(); break;
-                    case 7:
+                    case 3: loadScoresFromFile(); break;
+                    case 4: viewScores(); break;
+                    case 5: rankingsMenu(); break;
+                    case 6: viewPredictions(); break;
+                    case 7: clearAll(); break;
+                    case 8:
                     {
                         std::cout << "Would You Like To Close (Y/N): ";
                         char c = getCharInput();
@@ -526,13 +564,13 @@ void LeagueManager::mainMenu() //main interface for league
     }
 }
 
-void LeagueManager::viewSchedule()  //shows generated schedule
+void LeagueManager::viewSchedule()
 {
     schedule.display();
     pause();
 }
 
-void LeagueManager::addRegularSeasonScore() //interface to add regular season score by week
+void LeagueManager::addRegularSeasonScore()
 {
     schedule.display();
 
@@ -574,56 +612,60 @@ void LeagueManager::addRegularSeasonScore() //interface to add regular season sc
     scoring.updateGame(selectedGame, false);
 }
 
-void LeagueManager::viewScores() //shows team and player scores
+void LeagueManager::viewScores()
 {
     teams.displayAll();
     pause();
 }
 
-void LeagueManager::viewPredictions() //shows predictions of games
+void LeagueManager::viewPredictions()
 {
     prediction.displayPrediction(teams, schedule, regularSeasonWeeks);
     pause();
 }
 
-void LeagueManager::rankingsMenu() //shows rankings
+void LeagueManager::rankingsMenu()
 {
     rankings.display(teams);
     pause();
 }
 
-bool LeagueManager::regularSeasonComplete() //when season is complete
+bool LeagueManager::regularSeasonComplete()
 {
     for (int week = 0; week < regularSeasonWeeks; week++)
     {
         for (int gameIndex = 0; gameIndex < 50; gameIndex++)
         {
             Game* game = schedule.getGame(week, gameIndex);
+
             if (game == nullptr)
                 break;
+
             if (!game->isByeGame() && !game->isPlayed())
                 return false;
         }
     }
+
     return true;
 }
 
-void LeagueManager::playoffMenu() //shows playoff menu
+void LeagueManager::playoffMenu()
 {
     if (!hasPlayoff)
         return;
 
     if (!regularSeasonComplete())
     {
-        std::cout << "Playoffs have not been established yet.\n"; //fun little block so regular season has to be finished prior to generate
+        std::cout << "Playoffs have not been established yet.\n";
         pause();
         return;
     }
 
     if (!playoff.isGenerated())
     {
-        std::cout << "Generate Playoffs (Y/N): "; //generate playoffs
+        std::cout << "Generate Playoffs (Y/N): ";
         char choice = getCharInput();
+
         if (choice == 'Y' || choice == 'y')
             playoff.generate(teams, playoffTeamCount);
         else
@@ -644,7 +686,7 @@ void LeagueManager::playoffMenu() //shows playoff menu
     pause();
 }
 
-Player* LeagueManager::getMVP() //takes player with most points as MVP
+Player* LeagueManager::getMVP()
 {
     Teams* arr[100];
     int count = 0;
@@ -655,6 +697,7 @@ Player* LeagueManager::getMVP() //takes player with most points as MVP
     for (int i = 0; i < count; i++)
     {
         Player* teamBest = arr[i]->getHighestTotalPointPlayer();
+
         if (teamBest == nullptr)
             continue;
 
@@ -665,7 +708,7 @@ Player* LeagueManager::getMVP() //takes player with most points as MVP
     return best;
 }
 
-void LeagueManager::showChampionScreen() //final screen shows champion and mvp
+void LeagueManager::showChampionScreen()
 {
     Teams* champ = playoff.getChampion();
     Player* mvp = getMVP();
@@ -691,7 +734,7 @@ void LeagueManager::showChampionScreen() //final screen shows champion and mvp
         std::cout << "Invalid Option.\n";
 }
 
-void LeagueManager::clearAll() //clears all stored info back to beginning
+void LeagueManager::clearAll()
 {
     teams.clear();
     schedule.clear();
@@ -705,25 +748,21 @@ void LeagueManager::clearAll() //clears all stored info back to beginning
     setupLeague();
 }
 
-
 void LeagueManager::loadTeamsFromFile()
 {
     std::cout << "\nEnter filename (e.g., teams.txt): ";
     std::string filename = getRequiredLineInput();
 
     if (TeamsFile(filename))
-    {
         std::cout << "Teams loaded successfully!\n";
-    }
     else
-    {
         std::cout << "Failed to load teams from file.\n";
-    }
 }
 
 bool LeagueManager::TeamsFile(const std::string& filename)
 {
     std::ifstream file(filename);
+
     if (!file.is_open())
     {
         std::cout << "Error: Could not open file " << filename << "\n";
@@ -732,20 +771,17 @@ bool LeagueManager::TeamsFile(const std::string& filename)
 
     std::string line;
     Teams* currentTeam = nullptr;
-    std::string currentTeamName = "";
     int teamsLoaded = 0;
 
     while (std::getline(file, line))
     {
         line = clean(line);
 
-        // Skip empty lines and comments
         if (line.empty() || line[0] == '/' || line[0] == '#')
             continue;
 
         if (startsWith(line, "TEAM:"))
         {
-            // Save previous team if exists
             if (currentTeam != nullptr)
             {
                 teams.insert(*currentTeam);
@@ -753,21 +789,20 @@ bool LeagueManager::TeamsFile(const std::string& filename)
                 teamsLoaded++;
             }
 
-            currentTeamName = clean(line.substr(5));     // Extract team name and create new team
+            std::string currentTeamName = clean(line.substr(5));
             currentTeam = new Teams(currentTeamName);
+
             std::cout << "Loading team: " << currentTeamName << "\n";
         }
         else if (currentTeam != nullptr)
         {
-
-            Player newPlayer(line);     //line is a player name
+            Player newPlayer(line);
             currentTeam->addPlayer(newPlayer);
             std::cout << "  Added player: " << line << "\n";
         }
     }
 
-
-    if (currentTeam != nullptr) // Don't forget to add the last team
+    if (currentTeam != nullptr)
     {
         teams.insert(*currentTeam);
         delete currentTeam;
@@ -775,11 +810,9 @@ bool LeagueManager::TeamsFile(const std::string& filename)
     }
 
     file.close();
-
-    rebuildHashTable(); //Rebuild hash table after loading teams
+    rebuildHashTable();
 
     std::cout << "Loaded " << teamsLoaded << " teams.\n";
-
     return true;
 }
 
@@ -798,9 +831,10 @@ void LeagueManager::loadScoresFromFile()
 
     if (ScoresFile(filename))
     {
-        std::cout << "\n✓ Scores loaded successfully!\n";
-        std::cout << "✓ All player points updated\n";
-        std::cout << "✓ Team records updated\n";
+        std::cout << "\nScores loaded successfully!\n";
+        std::cout << "All player points updated\n";
+        std::cout << "Team records updated\n";
+        std::cout << "Schedule games updated\n";
     }
     else
     {
@@ -810,9 +844,86 @@ void LeagueManager::loadScoresFromFile()
     pause();
 }
 
+Game* LeagueManager::findScheduledGameFlexible(int weekIndex, const std::string& teamA, const std::string& teamB, bool& fileOrderMatchesSchedule)
+{
+    fileOrderMatchesSchedule = true;
+
+    for (int i = 0; i < 50; i++)
+    {
+        Game* game = schedule.getGame(weekIndex, i);
+
+        if (game == nullptr)
+            break;
+
+        if (game->isByeGame())
+            continue;
+
+        std::string scheduledHome = game->getHomeTeam()->getName();
+        std::string scheduledAway = game->getAwayTeam()->getName();
+
+        if (scheduledHome == teamA && scheduledAway == teamB)
+        {
+            fileOrderMatchesSchedule = true;
+            return game;
+        }
+
+        if (scheduledHome == teamB && scheduledAway == teamA)
+        {
+            fileOrderMatchesSchedule = false;
+            return game;
+        }
+    }
+
+    return nullptr;
+}
+
+void LeagueManager::applyPlayerPointsFromLine(Teams* team, const std::string& line)
+{
+    if (team == nullptr)
+        return;
+
+    std::string playersLine = clean(line.substr(line.find(':') + 1));
+    std::stringstream ss(playersLine);
+    std::string playerEntry;
+
+    while (std::getline(ss, playerEntry, ','))
+    {
+        playerEntry = clean(playerEntry);
+        size_t colonPos = playerEntry.find(':');
+
+        if (colonPos != std::string::npos)
+        {
+            std::string playerName = clean(playerEntry.substr(0, colonPos));
+            int points = std::stoi(clean(playerEntry.substr(colonPos + 1)));
+
+            bool found = false;
+
+            for (int i = 0; i < team->getPlayerCount(); i++)
+            {
+                Player* player = team->getPlayer(i);
+
+                if (player != nullptr && player->getName() == playerName)
+                {
+                    player->addRegularPoints(points);
+                    found = true;
+                    std::cout << "  " << playerName << " +" << points << " points\n";
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                std::cout << "Warning: Player '" << playerName
+                          << "' not found on team '" << team->getName() << "'\n";
+            }
+        }
+    }
+}
+
 bool LeagueManager::ScoresFile(const std::string& filename)
 {
     std::ifstream file(filename);
+
     if (!file.is_open())
     {
         std::cout << "Error: Could not open file " << filename << "\n";
@@ -821,116 +932,130 @@ bool LeagueManager::ScoresFile(const std::string& filename)
 
     std::string line;
     int currentWeek = -1;
-    std::string homeTeamName;
-    std::string awayTeamName;
-    int homeScore = 0;
-    int awayScore = 0;
+    std::string fileTeamA = "";
+    std::string fileTeamB = "";
+    int fileScoreA = 0;
+    int fileScoreB = 0;
+    std::string homePlayersLine = "";
+    std::string awayPlayersLine = "";
     int gamesLoaded = 0;
 
     while (std::getline(file, line))
     {
         line = clean(line);
 
-        // Skip empty lines and comments
         if (line.empty() || line[0] == '/' || line[0] == '#')
             continue;
 
         if (startsWith(line, "WEEK:"))
         {
-            currentWeek = std::stoi(clean(line.substr(5))) - 1; // Convert to 0-based
+            currentWeek = std::stoi(clean(line.substr(5))) - 1;
         }
         else if (startsWith(line, "GAME:"))
         {
-            //"TeamA vs TeamB"
             std::string gameLine = clean(line.substr(5));
             size_t vsPos = gameLine.find(" vs ");
+
             if (vsPos != std::string::npos)
             {
-                homeTeamName = clean(gameLine.substr(0, vsPos));
-                awayTeamName = clean(gameLine.substr(vsPos + 4));
+                fileTeamA = clean(gameLine.substr(0, vsPos));
+                fileTeamB = clean(gameLine.substr(vsPos + 4));
             }
         }
         else if (startsWith(line, "SCORE:"))
         {
             std::string scoreLine = clean(line.substr(6));
             size_t dashPos = scoreLine.find('-');
+
             if (dashPos != std::string::npos)
             {
-                homeScore = std::stoi(clean(scoreLine.substr(0, dashPos)));
-                awayScore = std::stoi(clean (scoreLine.substr(dashPos + 1)));
+                fileScoreA = std::stoi(clean(scoreLine.substr(0, dashPos)));
+                fileScoreB = std::stoi(clean(scoreLine.substr(dashPos + 1)));
             }
         }
-        else if (startsWith(line, "HOME_PLAYERS:") || startsWith(line, "AWAY_PLAYERS:"))
+        else if (startsWith(line, "HOME_PLAYERS:"))
         {
-            bool isHome = startsWith(line, "HOME_PLAYERS:");
-            std::string teamName = isHome ? homeTeamName : awayTeamName;
+            homePlayersLine = line;
+        }
+        else if (startsWith(line, "AWAY_PLAYERS:"))
+        {
+            awayPlayersLine = line;
 
-            Teams* team = teamTable.get(teamName);// Use hash table for fast lookup
-
-            if (team == nullptr)
+            if (currentWeek < 0)
             {
-                std::cout << "Warning: Team '" << teamName << "' not found.\n";
+                std::cout << "Warning: Invalid week for game "
+                          << fileTeamA << " vs " << fileTeamB << "\n";
                 continue;
             }
 
+            bool fileOrderMatchesSchedule = true;
+            Game* scheduledGame = findScheduledGameFlexible(currentWeek, fileTeamA, fileTeamB, fileOrderMatchesSchedule);
 
-            if (isHome)     // Update team score and record
+            if (scheduledGame == nullptr)
             {
-                team->addPoints(homeScore, awayScore);
-                if (homeScore > awayScore)
-                    team->addWin();
-                else if (homeScore < awayScore)
-                    team->addLoss();
-                else
-                    team->addTie();
+                std::cout << "Warning: Scheduled game not found for week "
+                          << currentWeek + 1 << ": "
+                          << fileTeamA << " vs " << fileTeamB << "\n";
+                continue;
+            }
+
+            if (scheduledGame->isPlayed())
+            {
+                std::cout << "Warning: Game already scored for week "
+                          << currentWeek + 1 << ": "
+                          << scheduledGame->getHomeTeam()->getName() << " vs "
+                          << scheduledGame->getAwayTeam()->getName() << "\n";
+                continue;
+            }
+
+            Teams* scheduledHome = scheduledGame->getHomeTeam();
+            Teams* scheduledAway = scheduledGame->getAwayTeam();
+
+            int scheduledHomeScore;
+            int scheduledAwayScore;
+
+            if (fileOrderMatchesSchedule)
+            {
+                scheduledHomeScore = fileScoreA;
+                scheduledAwayScore = fileScoreB;
+
+                applyPlayerPointsFromLine(scheduledHome, homePlayersLine);
+                applyPlayerPointsFromLine(scheduledAway, awayPlayersLine);
             }
             else
             {
-                team->addPoints(awayScore, homeScore);
-                if (awayScore > homeScore)
-                    team->addWin();
-                else if (awayScore < homeScore)
-                    team->addLoss();
-                else
-                    team->addTie();
+                scheduledHomeScore = fileScoreB;
+                scheduledAwayScore = fileScoreA;
+
+                applyPlayerPointsFromLine(scheduledHome, awayPlayersLine);
+                applyPlayerPointsFromLine(scheduledAway, homePlayersLine);
             }
 
-            //Get player name andscore
-            std::string playersLine = clean(line.substr(line.find(':') + 1));
-            std::stringstream ss(playersLine);
-            std::string playerEntry;
+            scheduledGame->setScore(scheduledHomeScore, scheduledAwayScore);
 
-            while (std::getline(ss, playerEntry, ','))
+            scheduledHome->addPoints(scheduledHomeScore, scheduledAwayScore);
+            scheduledAway->addPoints(scheduledAwayScore, scheduledHomeScore);
+
+            if (scheduledHomeScore > scheduledAwayScore)
             {
-                playerEntry = clean(playerEntry);
-                size_t colonPos = playerEntry.find(':');
-                if (colonPos != std::string::npos)
-                {
-                    std::string playerName = clean(playerEntry.substr(0, colonPos));
-                    int points = std::stoi(clean(playerEntry.substr(colonPos + 1)));
-
-                    bool found = false; // find player and add points
-                    for (int i = 0; i < team->getPlayerCount(); i++)
-                    {
-                        Player* player = team->getPlayer(i);
-                        if (player && player->getName() == playerName)
-                        {
-                            player->addRegularPoints(points);   //use addRegularPoints for regular season
-                            found = true;
-                            std::cout << "  " << playerName << " +" << points << " points\n";
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        std::cout << "Warning: Player '" << playerName << "' not found on team '" << teamName << "'\n";
-                    }
-                }
+                scheduledHome->addWin();
+                scheduledAway->addLoss();
+            }
+            else if (scheduledAwayScore > scheduledHomeScore)
+            {
+                scheduledAway->addWin();
+                scheduledHome->addLoss();
+            }
+            else
+            {
+                scheduledHome->addTie();
+                scheduledAway->addTie();
             }
 
-            if (!isHome)  // Count games after processing away team
-                gamesLoaded++;
+            gamesLoaded++;
+
+            homePlayersLine = "";
+            awayPlayersLine = "";
         }
     }
 
@@ -942,14 +1067,18 @@ bool LeagueManager::ScoresFile(const std::string& filename)
 std::string LeagueManager::clean(const std::string& str)
 {
     size_t first = str.find_first_not_of(" \t\r\n");
+
     if (first == std::string::npos)
         return "";
+
     size_t last = str.find_last_not_of(" \t\r\n");
-    return str.substr(first, (last - first + 1));
+    return str.substr(first, last - first + 1);
 }
 
 bool LeagueManager::startsWith(const std::string& str, const std::string& prefix)
 {
-    return str.size() >= prefix.size() &&
-           str.compare(0, prefix.size(), prefix) == 0;
+    if (str.length() < prefix.length())
+        return false;
+
+    return str.compare(0, prefix.length(), prefix) == 0;
 }
